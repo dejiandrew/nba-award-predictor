@@ -5,9 +5,9 @@ Final Project
 
 ## Team Members
 - Deji Andrew: Data Engineering & Infrastructure
-- Person 2: Feature Engineering & EDA
-- Person 3: Machine Learning Modeling
-- Person 4: Visualization & Final Deliverable
+- Josh/Abdullah/Hao: Feature Engineering & EDA
+- Josh/Abdullah/Hao: Machine Learning Modeling
+- Josh/Abdullah/Hao: Visualization & Final Deliverable
 
 ## Project Overview
 Our project uses historical NBA performance data to predict various NBA awards, including:
