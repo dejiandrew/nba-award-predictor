@@ -24,7 +24,9 @@ We'll apply machine learning techniques to identify the statistical profiles and
 
 ### Quick Start for Notebooks
 
-Copy and paste these cells in your Jupyter notebook to access the NBA dataset files:
+All CSV files are stored in a Google Cloud Storage (GCS) bucket. You can access any file by replacing `playerstatistics.csv` with your desired CSV filename in the download URL.
+
+Copy and paste these cells in your Jupyter notebook to access any NBA dataset file:
 
 ```python
 # Cell 1: Install wget and pandas if needed
@@ -33,7 +35,7 @@ Copy and paste these cells in your Jupyter notebook to access the NBA dataset fi
 ```
 
 ```python
-# Cell 2: Download the CSV file
+# Cell 2: Download the CSV file (replace playerstatistics.csv with any filename from the list below)
 import wget
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/playerstatistics.csv')
 ```
@@ -45,6 +47,8 @@ pd.read_csv('playerstatistics.csv')
 ```
 
 ### Available CSV Files
+
+All of the following files are available in the GCS bucket and can be accessed by replacing `playerstatistics.csv` with the desired filename in the URL pattern: `https://storage.googleapis.com/nba_award_predictor/nba_data/FILENAME.csv`
 
 The dataset contains the following key files:
 - `common_player_info.csv` - Basic player information
