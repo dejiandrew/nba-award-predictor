@@ -11,208 +11,120 @@ import pandas as pd
 import unicodedata
 import re
 import duckdb
-import wget
+from io import StringIO
 from google.cloud import storage
+import wget
 import os
 
 def remove_accents(text):
     """
     Remove accent marks from input text while preserving the base characters.
     Also handles special characters like Đ/đ.
+    
+    Example:
+    "Nikola Đurišić" -> "Nikola Durisic"
     """
-    if not isinstance(text, str):
-        return text
-        
+    # First, handle special characters that need specific replacements
     special_chars = {
-        'Đ': 'D', 'đ': 'd', 'Ł': 'L', 'ł': 'l', 'Ø': 'O', 'ø': 'o',
-        'Ŧ': 'T', 'ŧ': 't', 'Æ': 'AE', 'æ': 'ae', 'Œ': 'OE', 'œ': 'oe',
-        'ß': 'ss'
+        'Đ': 'D', 'đ': 'd',  # Serbian/Croatian D with stroke
+        'Ł': 'L', 'ł': 'l',  # Polish L with stroke
+        'Ø': 'O', 'ø': 'o',  # Danish/Norwegian O with stroke
+        'Ŧ': 'T', 'ŧ': 't',  # Sami T with stroke
+        'Æ': 'AE', 'æ': 'ae',  # Æ/æ ligature
+        'Œ': 'OE', 'œ': 'oe',  # Œ/œ ligature
+        'ß': 'ss',  # German eszett
     }
     
     for char, replacement in special_chars.items():
         text = text.replace(char, replacement)
     
+    # Normalize the text to decompose characters into base character and accent mark
     normalized_text = unicodedata.normalize('NFKD', text)
+    
+    # Filter out the non-spacing marks (accent marks)
     result = ''.join(c for c in normalized_text if not unicodedata.category(c).startswith('Mn'))
     
     return result
 
-# Download files
-print("Downloading files...")
-filename = 'playerstatistics.csv'
+# URL of the CSV file
+filename = 'playeroftheweek.csv'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
-print(f"\nDownloaded {filename}")
+# Read in the playeroftheweek csv
+playeroftheweek_df = pd.read_csv(filename)
 
+# Clean each player's full name
+playeroftheweek_df["player"] = playeroftheweek_df["player"].apply(remove_accents)
+
+# Bring in name mapping table for names to help match all names to the format seen in the NBA API
 filename = 'name_mappings.csv'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
-print(f"\nDownloaded {filename}")
+# Read in the name_mappings csv
+name_mapping_df = pd.read_csv(filename)
 
+# Bring in nba player lookup table to map the cleaned names to player IDs. Same player IDs from the NBA API.
 filename = 'nba_player_lookup.csv'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
-print(f"\nDownloaded {filename}")
+# Read in the nba_player_lookup csv
+nba_player_lookup_df = pd.read_csv(filename)
 
-# Read in the smaller datasets fully
-name_mapping_df = pd.read_csv('name_mappings.csv')
-nba_player_lookup_df = pd.read_csv('nba_player_lookup.csv')
-
-# Clean player names in lookup table
+# Clean each player's full name
 nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(remove_accents)
 
-# Register these dataframes with DuckDB
-duckdb.register('name_mapping_df', name_mapping_df)
-duckdb.register('nba_player_lookup_df', nba_player_lookup_df)
-
-# Define the output file
-output_file = 'player-statistics.csv'
-
-# Process and save in chunks
-chunk_size = 100000
-first_chunk = True
-processed_rows = 0
-
-print(f"Processing data in chunks of {chunk_size} rows...")
-
-for chunk_num, chunk in enumerate(pd.read_csv('playerstatistics.csv', chunksize=chunk_size, low_memory=False)):
-    # Add full_name column
-    chunk['full_name'] = chunk['firstName'] + ' ' + chunk['lastName']
-    
-    # Register current chunk with DuckDB
-    duckdb.register('player_statistics_chunk', chunk)
-    
-    query = """
+query = """
 WITH CTE AS (
-        SELECT * FROM player_statistics_chunk
-        LEFT JOIN name_mapping_df
-        ON player_statistics_chunk.full_name = name_mapping_df.in_table_name
-    )
-    ,CTE2 AS (
-        SELECT *,
-        CASE WHEN nba_lookup_name IS NULL THEN full_name
-        ELSE nba_lookup_name
-        END AS player_full_name
-        FROM CTE
-    )
-    
-    ,CTE3 AS (
-    SELECT 
-        CTE2.*,
-        nba_player_lookup_df.player_id
-    FROM CTE2
-    LEFT JOIN nba_player_lookup_df
-    ON CTE2.player_full_name = nba_player_lookup_df.player_name
-    )
+SELECT * FROM playeroftheweek_df
+LEFT JOIN name_mapping_df
+ON playeroftheweek_df.player = name_mapping_df.in_table_name
+)
+,CTE2 AS (
+SELECT *,
+CASE WHEN nba_lookup_name IS NULL THEN player
+ELSE nba_lookup_name
+END AS player_full_name
+FROM CTE
+)
 
-    SELECT
-    firstName
-    ,lastName
-    ,full_name
-    ,CAST(player_id_1 AS INT) AS player_id
-    --,personId
-    ,gameId
-    ,gameDate
-    ,playerteamCity
-    ,playerteamName
-    ,opponentteamCity
-    ,opponentteamName
-    ,gameType
-    ,gameLabel
-    ,gameSubLabel
-    ,seriesGameNumber
-    ,win
-    ,home
-    ,numMinutes
-    ,points
-    ,assists
-    ,blocks
-    ,steals
-    ,fieldGoalsAttempted
-    ,fieldGoalsMade
-    ,fieldGoalsPercentage
-    ,threePointersAttempted
-    ,threePointersMade
-    ,threePointersPercentage
-    ,freeThrowsAttempted
-    ,freeThrowsMade
-    ,freeThrowsPercentage
-    ,reboundsDefensive
-    ,reboundsOffensive
-    ,reboundsTotal
-    ,foulsPersonal
-    ,turnovers
-    ,plusMinusPoints
-    --,in_table_name
-    --,nba_lookup_name
-    --,player_id
-    --,Unnamed: 3
-    --,player_full_name
-    FROM CTE3
-    """
-    
-    # Execute query for this chunk
-    result_chunk = duckdb.query(query).df()
-    
-    # Write to CSV (first chunk with header, subsequent chunks without)
-    if first_chunk:
-        result_chunk.to_csv(output_file, index=False, mode='w')
-        first_chunk = False
-    else:
-        result_chunk.to_csv(output_file, index=False, mode='a', header=False)
-    
-    # Update progress
-    processed_rows += len(result_chunk)
-    print(f"Processed chunk {chunk_num+1} - Total rows: {processed_rows}")
-    
-    # Clean up to free memory
-    duckdb.unregister('player_statistics_chunk')
-    del chunk
-    del result_chunk
+SELECT CTE2.*
+,nba_player_lookup_df.player_id AS true_player_id
+FROM CTE2
+JOIN nba_player_lookup_df
+ON CTE2.player_full_name = nba_player_lookup_df.player_name
+WHERE 1=1
+AND nba_player_lookup_df.player_id NOT IN (76616, 120, 698, 7714) -- Taking out players who share the same name with someone else because it messes up the join
 
-print(f"All chunks processed. Total rows: {processed_rows}")
-print(f"Results saved to {output_file}")
+"""
 
-# Upload to GCS
-print("Uploading file to Google Cloud Storage...")
+player_of_the_week_df = duckdb.query(query).df().drop(['in_table_name', 'nba_lookup_name', 'player_id', 'Unnamed: 3', 'player_full_name'], axis=1)
+player_of_the_week_df
+
+#Rearrange columns
+cols = player_of_the_week_df.columns.tolist()
+new_cols = [cols[-1]] + cols[:-1]
+player_of_the_week_df = player_of_the_week_df[new_cols]
+player_of_the_week_df = player_of_the_week_df.rename(columns={'true_player_id': 'player_id'})
+player_of_the_week_df.to_csv('player-of-the-week.csv')
 
 # Path to your credentials file
 credentials_path = 'cis-5450-final-project-485661e2f371.json'
 
-try:
-    # Set up the client with your credentials
-    storage_client = storage.Client.from_service_account_json(credentials_path)
-    
-    # Specify your bucket name
-    bucket_name = 'nba_award_predictor'
-    bucket = storage_client.bucket(bucket_name)
-    
-    # Define blob (file in GCS) and upload from the local file
-    blob = bucket.blob('nba_data/player-statistics.csv')
-    blob.cache_control = "max-age=0"
-    blob.upload_from_filename(output_file)
-    
-    print(f"File successfully uploaded to gs://{bucket_name}/nba_data/player-statistics.csv")
-    
-    # Get file size for confirmation
-    file_size_mb = os.path.getsize(output_file) / (1024 * 1024)
-    print(f"Uploaded file size: {file_size_mb:.2f} MB")
-    
-except Exception as e:
-    print(f"Error uploading to GCS: {e}")
-    print("You may need to update the credentials file.")
+# Set up the client with your credentials
+storage_client = storage.Client.from_service_account_json(credentials_path)
 
-# URL of the final CSV file
-filename = 'player-statistics.csv'
-url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-wget.download(url)
-# Read in the player-statistics csv
-player_statistics_df = pd.read_csv(filename)
+# Specify your bucket name
+bucket_name = 'nba_award_predictor'
+bucket = storage_client.bucket(bucket_name)
 
-os.remove("player-statistics.csv")
-os.remove("playerstatistics.csv")
+# Define blob (file in GCS) and upload from the local file
+blob = bucket.blob('nba_data/player-of-the-week.csv')
+blob.cache_control = "max-age=0"
+blob.upload_from_filename('player-of-the-week.csv')
+
 os.remove("name_mappings.csv")
 os.remove("nba_player_lookup.csv")
-os.remove("player-statistics (1).csv")
+os.remove("player-of-the-week.csv")
+os.remove("playeroftheweek.csv")
 
-print("Process complete!")
+print(f"File uploaded to gs://{bucket_name}/nba_data/player-of-the-week.csv")
