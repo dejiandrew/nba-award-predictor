@@ -153,6 +153,10 @@ WITH CTE AS (
     
     # Execute query for this chunk
     result_chunk = duckdb.query(query).df()
+
+    # Drop any rows where player_id is null then convert player_id column from float to int. 
+    result_chunk = result_chunk.dropna(subset=['player_id'])
+    result_chunk["player_id"] = result_chunk["player_id"].astype('Int64')
     
     # Write to CSV (first chunk with header, subsequent chunks without)
     if first_chunk:
@@ -206,8 +210,8 @@ except Exception as e:
 filename = 'player-statistics.csv'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
-# Read in the player-statistics csv
-player_statistics_df = pd.read_csv(filename)
+# Read in the player-statistics csv (comment this out if deploying on remote server, to save RAM)
+#player_statistics_df = pd.read_csv(filename)
 
 os.remove("player-statistics.csv")
 os.remove("playerstatistics.csv")
