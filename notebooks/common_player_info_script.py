@@ -1,3 +1,12 @@
+# First, clear any existing large DataFrames from memory
+try:
+    del nba_player_lookup_df
+    import gc
+    gc.collect()
+    print("Memory cleared from previous DataFrame")
+except NameError:
+    print("No existing DataFrame found in memory")
+
 import pandas as pd
 import unicodedata
 import re

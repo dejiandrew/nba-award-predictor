@@ -1,6 +1,6 @@
 # First, clear any existing large DataFrames from memory
 try:
-    del player_statistics_df
+    del player_of_the_week_df
     import gc
     gc.collect()
     print("Memory cleared from previous DataFrame")
@@ -98,7 +98,6 @@ AND nba_player_lookup_df.player_id NOT IN (76616, 120, 698, 7714) -- Taking out 
 """
 
 player_of_the_week_df = duckdb.query(query).df().drop(['in_table_name', 'nba_lookup_name', 'player_id', 'Unnamed: 3', 'player_full_name'], axis=1)
-player_of_the_week_df
 
 #Rearrange columns
 cols = player_of_the_week_df.columns.tolist()
