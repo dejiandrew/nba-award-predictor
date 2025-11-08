@@ -1,6 +1,6 @@
 # First, clear any existing large DataFrames from memory
 try:
-    del nba_player_lookup_df
+    del common_player_info_df
     import gc
     gc.collect()
     print("Memory cleared from previous DataFrame")
