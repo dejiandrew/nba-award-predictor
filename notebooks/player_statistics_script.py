@@ -44,26 +44,26 @@ url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
 print(f"\nDownloaded {filename}")
 
-filename = 'name_mappings.csv'
-url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-wget.download(url)
-print(f"\nDownloaded {filename}")
+# filename = 'name_mappings.csv?authuser=4'
+# url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
+# wget.download(url)
+# print(f"\nDownloaded name_mappings.csv")
 
-filename = 'nba_player_lookup.csv'
-url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-wget.download(url)
-print(f"\nDownloaded {filename}")
+# filename = 'nba_player_lookup.csv'
+# url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
+# wget.download(url)
+# print(f"\nDownloaded {filename}")
 
-# Read in the smaller datasets fully
-name_mapping_df = pd.read_csv('name_mappings.csv')
-nba_player_lookup_df = pd.read_csv('nba_player_lookup.csv')
+# # Read in the smaller datasets fully
+# name_mapping_df = pd.read_csv('name_mappings.csv')
+# nba_player_lookup_df = pd.read_csv('nba_player_lookup.csv')
 
-# Clean player names in lookup table
-nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(remove_accents)
+# # Clean player names in lookup table
+# nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(remove_accents)
 
-# Register these dataframes with DuckDB
-duckdb.register('name_mapping_df', name_mapping_df)
-duckdb.register('nba_player_lookup_df', nba_player_lookup_df)
+# # Register these dataframes with DuckDB
+# duckdb.register('name_mapping_df', name_mapping_df)
+# duckdb.register('nba_player_lookup_df', nba_player_lookup_df)
 
 # Define the output file
 output_file = 'player-statistics.csv'
@@ -83,34 +83,11 @@ for chunk_num, chunk in enumerate(pd.read_csv('playerstatistics.csv', chunksize=
     duckdb.register('player_statistics_chunk', chunk)
     
     query = """
-WITH CTE AS (
-        SELECT * FROM player_statistics_chunk
-        LEFT JOIN name_mapping_df
-        ON player_statistics_chunk.full_name = name_mapping_df.in_table_name
-    )
-    ,CTE2 AS (
-        SELECT *,
-        CASE WHEN nba_lookup_name IS NULL THEN full_name
-        ELSE nba_lookup_name
-        END AS player_full_name
-        FROM CTE
-    )
-    
-    ,CTE3 AS (
-    SELECT 
-        CTE2.*,
-        nba_player_lookup_df.player_id
-    FROM CTE2
-    LEFT JOIN nba_player_lookup_df
-    ON CTE2.player_full_name = nba_player_lookup_df.player_name
-    )
-
     SELECT
     firstName
     ,lastName
     ,full_name
-    ,CAST(player_id_1 AS INT) AS player_id
-    --,personId
+    ,personId AS player_id
     ,gameId
     ,gameDate
     ,playerteamCity
@@ -143,12 +120,7 @@ WITH CTE AS (
     ,foulsPersonal
     ,turnovers
     ,plusMinusPoints
-    --,in_table_name
-    --,nba_lookup_name
-    --,player_id
-    --,Unnamed: 3
-    --,player_full_name
-    FROM CTE3
+    FROM player_statistics_chunk
     """
     
     # Execute query for this chunk
@@ -215,8 +187,8 @@ wget.download(url)
 
 os.remove("player-statistics.csv")
 os.remove("playerstatistics.csv")
-os.remove("name_mappings.csv")
-os.remove("nba_player_lookup.csv")
+# os.remove("name_mappings.csv")
+# os.remove("nba_player_lookup.csv")
 os.remove("player-statistics (1).csv")
 
 print("Process complete!")
