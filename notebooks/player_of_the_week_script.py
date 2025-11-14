@@ -1,12 +1,3 @@
-# First, clear any existing large DataFrames from memory
-try:
-    del player_of_the_week_df
-    import gc
-    gc.collect()
-    print("Memory cleared from previous DataFrame")
-except NameError:
-    print("No existing DataFrame found in memory")
-
 import pandas as pd
 import unicodedata
 import re
@@ -57,11 +48,37 @@ playeroftheweek_df = pd.read_csv(filename)
 playeroftheweek_df["player"] = playeroftheweek_df["player"].apply(remove_accents)
 
 # Bring in name mapping table for names to help match all names to the format seen in the NBA API
-filename = 'name_mappings.csv'
+filename = 'name_mappings.csv?authuser=4'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
 # Read in the name_mappings csv
-name_mapping_df = pd.read_csv(filename)
+name_mapping_df = pd.read_csv('name_mappings.csv')
+
+# Standardize the names in playeroftheweek_df
+query = """
+WITH CTE AS (
+SELECT * FROM playeroftheweek_df
+LEFT JOIN name_mapping_df a
+ON playeroftheweek_df.player = a.in_table_name
+LEFT JOIN name_mapping_df b
+ON playeroftheweek_df.player = b.nba_lookup_name
+)
+
+SELECT season
+,CASE WHEN nba_lookup_name IS NOT NULL THEN nba_lookup_name ELSE player END AS player
+,conference
+,date
+,team
+,pos
+,height
+,weight
+,age
+,"Pre-Draft Team"
+,"Draft Yr"
+,yos
+FROM CTE
+"""
+playeroftheweek_df = duckdb.query(query).df()
 
 # Bring in nba player lookup table to map the cleaned names to player IDs. Same player IDs from the NBA API.
 filename = 'nba_player_lookup.csv'
@@ -76,34 +93,37 @@ nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(
 query = """
 WITH CTE AS (
 SELECT * FROM playeroftheweek_df
-LEFT JOIN name_mapping_df
-ON playeroftheweek_df.player = name_mapping_df.in_table_name
+LEFT JOIN name_mapping_df a
+ON playeroftheweek_df.player = a.in_table_name
+LEFT JOIN name_mapping_df b
+ON playeroftheweek_df.player = b.nba_lookup_name
 )
-,CTE2 AS (
-SELECT *,
-CASE WHEN nba_lookup_name IS NULL THEN player
-ELSE nba_lookup_name
-END AS player_full_name
+, CTE2 AS (
+SELECT
+season
+,CASE WHEN nba_lookup_name IS NOT NULL THEN nba_lookup_name ELSE player END AS player
+,conference
+,date
+,team
+,pos
+,height
+,weight
+,age
+,"Pre-Draft Team"
+,"Draft Yr"
+,yos
 FROM CTE
 )
 
-SELECT CTE2.*
-,nba_player_lookup_df.player_id AS true_player_id
+SELECT nba_player_lookup_df.player_id, CTE2.*
 FROM CTE2
-JOIN nba_player_lookup_df
-ON CTE2.player_full_name = nba_player_lookup_df.player_name
-WHERE 1=1
-AND nba_player_lookup_df.player_id NOT IN (76616, 120, 698, 7714) -- Taking out players who share the same name with someone else because it messes up the join
-
+LEFT JOIN nba_player_lookup_df
+ON CTE2.player = nba_player_lookup_df.player_name
+ORDER BY DATE DESC, conference
 """
 
-player_of_the_week_df = duckdb.query(query).df().drop(['in_table_name', 'nba_lookup_name', 'player_id', 'Unnamed: 3', 'player_full_name'], axis=1)
+player_of_the_week_df = duckdb.query(query).df()
 
-#Rearrange columns
-cols = player_of_the_week_df.columns.tolist()
-new_cols = [cols[-1]] + cols[:-1]
-player_of_the_week_df = player_of_the_week_df[new_cols]
-player_of_the_week_df = player_of_the_week_df.rename(columns={'true_player_id': 'player_id'})
 player_of_the_week_df.to_csv('player-of-the-week.csv')
 
 # Path to your credentials file
