@@ -44,27 +44,6 @@ url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
 print(f"\nDownloaded {filename}")
 
-# filename = 'name_mappings.csv?authuser=4'
-# url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-# wget.download(url)
-# print(f"\nDownloaded name_mappings.csv")
-
-# filename = 'nba_player_lookup.csv'
-# url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-# wget.download(url)
-# print(f"\nDownloaded {filename}")
-
-# # Read in the smaller datasets fully
-# name_mapping_df = pd.read_csv('name_mappings.csv')
-# nba_player_lookup_df = pd.read_csv('nba_player_lookup.csv')
-
-# # Clean player names in lookup table
-# nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(remove_accents)
-
-# # Register these dataframes with DuckDB
-# duckdb.register('name_mapping_df', name_mapping_df)
-# duckdb.register('nba_player_lookup_df', nba_player_lookup_df)
-
 # Define the output file
 output_file = 'player-statistics.csv'
 
@@ -187,8 +166,6 @@ wget.download(url)
 
 os.remove("player-statistics.csv")
 os.remove("playerstatistics.csv")
-# os.remove("name_mappings.csv")
-# os.remove("nba_player_lookup.csv")
 os.remove("player-statistics (1).csv")
 
 print("Process complete!")
