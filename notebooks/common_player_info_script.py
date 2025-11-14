@@ -1,12 +1,3 @@
-# First, clear any existing large DataFrames from memory
-try:
-    del common_player_info_df
-    import gc
-    gc.collect()
-    print("Memory cleared from previous DataFrame")
-except NameError:
-    print("No existing DataFrame found in memory")
-
 import pandas as pd
 import unicodedata
 import re
@@ -47,9 +38,6 @@ def remove_accents(text):
     
     return result
 
-
-
-
 # URL of the CSV file
 filename = 'common_player_info.csv'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
@@ -61,52 +49,24 @@ common_player_info_df = pd.read_csv(filename)
 common_player_info_df["display_first_last"] = common_player_info_df["display_first_last"].apply(remove_accents)
 
 # Bring in name mapping table for names to help match all names to the format seen in the NBA API
-filename = 'name_mappings.csv'
+filename = 'name_mappings.csv?authuser=4'
 url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
 wget.download(url)
 # Read in the name_mappings csv
-name_mapping_df = pd.read_csv(filename)
-
-# Bring in nba player lookup table to map the cleaned names to player IDs. Same player IDs from the NBA API.
-filename = 'nba_player_lookup.csv'
-url = f'https://storage.googleapis.com/nba_award_predictor/nba_data/{filename}'
-wget.download(url)
-# Read in the nba_player_lookup csv
-nba_player_lookup_df = pd.read_csv(filename)
-
-# Clean each player's full name
-nba_player_lookup_df["player_name"] = nba_player_lookup_df["player_name"].apply(remove_accents)
+name_mapping_df = pd.read_csv('name_mappings.csv')
 
 query = """
 WITH CTE AS (
 SELECT * FROM common_player_info_df
 LEFT JOIN name_mapping_df
-ON common_player_info_df.display_first_last = name_mapping_df.in_table_name
-)
-,CTE2 AS (
-SELECT *,
-CASE WHEN nba_lookup_name IS NULL THEN display_first_last
-ELSE nba_lookup_name
-END AS player_full_name
-FROM CTE
+ON common_player_info_df.person_id = name_mapping_df.player_id
 )
 
-SELECT CTE2.*
-,nba_player_lookup_df.player_id
-FROM CTE2
-LEFT JOIN nba_player_lookup_df
-ON CTE2.player_full_name = nba_player_lookup_df.player_name
-
+SELECT * FROM CTE
 """
 
-common_player_info_df = duckdb.query(query).df().drop(['person_id', 'display_first_last', 'display_last_comma_first', 'display_fi_last', 'player_slug', 'in_table_name', 'nba_lookup_name'], axis=1)
-
-#Rearrange columns
-cols = common_player_info_df.columns.tolist()
-new_cols = [cols[-1], cols[-2]] + cols[:-2]
-common_player_info_df = common_player_info_df[new_cols]
+common_player_info_df = duckdb.query(query).df()
 common_player_info_df.to_csv('common-player-info.csv')
-
 
 # Path to your credentials file
 credentials_path = 'cis-5450-final-project-485661e2f371.json'
@@ -126,6 +86,5 @@ blob.upload_from_filename('common-player-info.csv')
 os.remove("common_player_info.csv")
 os.remove("common-player-info.csv")
 os.remove("name_mappings.csv")
-os.remove("nba_player_lookup.csv")
 
 print(f"File uploaded to gs://{bucket_name}/nba_data/common-player-info.csv")
