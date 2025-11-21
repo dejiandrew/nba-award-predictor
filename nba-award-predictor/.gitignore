@@ -37,4 +37,8 @@ Thumbs.db
 .vscode/
 .idea/
 
-*.env
+.env
+*.json
+
+cis-5450-final-project-485661e2f371.json
+*.json
