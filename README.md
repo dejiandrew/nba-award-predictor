@@ -28,8 +28,8 @@ The data pipeline runs automatically every morning via a **cron job on a Digital
 ### Automated ETL Process
 Our data pipeline is orchestrated through `run_nba_pipeline.sh`, which executes the following scripts in sequence:
 
-1. **`nba_pipeline_1.py`** - Downloads NBA dataset from Kaggle and exports core tables to Google Cloud Storage
-2. **`nba_pipeline_2.py`** - Processes additional historical NBA data and box scores
+1. **`kaggle_core_data_ingestion.py`** - Downloads NBA dataset from Kaggle and exports core tables to Google Cloud Storage
+2. **`kaggle_historical_data_ingestion.py`** - Processes additional historical NBA data and box scores
 3. **`nba_pipeline_player_lookup.py`** - Creates player lookup tables from the NBA API
 4. **`common_player_info_script.py`** - Processes and standardizes player information
 5. **`player_of_the_week_script.py`** - Cleans and maps Player of the Week award data
@@ -91,15 +91,15 @@ Key files:
 ## Project Structure
 ```
 nba-award-predictor/
-├── data_engineering/          # ETL scripts and pipeline orchestration
-│   ├── run_nba_pipeline.sh   # Main pipeline execution script
-│   ├── nba_pipeline_1.py     # Kaggle data download and GCS export
-│   ├── nba_pipeline_2.py     # Historical data processing
-│   └── ...                    # Additional processing scripts
-├── feature_engineering/       # Feature creation notebooks
-│   └── overall_features.ipynb # Main feature engineering notebook
-├── modeling/                  # Machine learning models (TBD)
-└── notebooks/                 # Exploratory analysis (TBD)
+├── data_engineering/                         # ETL scripts and pipeline orchestration
+│   ├── run_nba_pipeline.sh                   # Main pipeline execution script
+│   ├── kaggle_core_data_ingestion.py         # Kaggle data download and GCS export
+│   ├── kaggle_historical_data_ingestion.py   # Historical data processing
+│   └── ...                                   # Additional processing scripts
+├── feature_engineering/                      # Feature creation notebooks
+│   └── overall_features.ipynb                # Main feature engineering notebook
+├── modeling/                                 # Machine learning models (TBD)
+└── notebooks/                                # Exploratory analysis (TBD)
 ```
 
 ## Requirements
@@ -107,4 +107,3 @@ See `requirements.txt` for Python dependencies. Key packages:
 - pandas, numpy, duckdb
 - google-cloud-storage
 - kaggle, nba_api
-- psycopg2-binary, SQLAlchemy
