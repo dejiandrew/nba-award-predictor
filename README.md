@@ -38,7 +38,7 @@ Our data pipeline is orchestrated through `run_nba_pipeline.sh`, which executes 
 
 All processed data is stored in Google Cloud Storage bucket: `nba_award_predictor`
 
-**Pipeline Schedule**: Runs daily at 4:00 AM EST via cron on DigitalOcean infrastructure
+**Pipeline Schedule**: Runs daily at 6:00 AM EST via cron on DigitalOcean infrastructure
 
 ### Key Data Sources
 - **Kaggle Datasets**: 
