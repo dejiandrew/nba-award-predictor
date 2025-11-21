@@ -18,6 +18,13 @@ This project uses historical NBA performance data to predict Player of the Week 
 
 ## Data Pipeline
 
+### Infrastructure
+The data pipeline runs automatically every morning via a **cron job on a DigitalOcean droplet**, ensuring we have up-to-date NBA data daily. This production infrastructure guarantees:
+- Fresh data from Kaggle and NBA API sources
+- Automated processing and validation
+- Reliable uploads to Google Cloud Storage
+- Zero manual intervention required
+
 ### Automated ETL Process
 Our data pipeline is orchestrated through `run_nba_pipeline.sh`, which executes the following scripts in sequence:
 
@@ -30,6 +37,8 @@ Our data pipeline is orchestrated through `run_nba_pipeline.sh`, which executes 
 7. **`play_by_play.py`** - Handles play-by-play data upload to GCS
 
 All processed data is stored in Google Cloud Storage bucket: `nba_award_predictor`
+
+**Pipeline Schedule**: Runs daily at 4:00 AM EST via cron on DigitalOcean infrastructure
 
 ### Key Data Sources
 - **Kaggle Datasets**: 
@@ -98,3 +107,4 @@ See `requirements.txt` for Python dependencies. Key packages:
 - pandas, numpy, duckdb
 - google-cloud-storage
 - kaggle, nba_api
+- psycopg2-binary, SQLAlchemy
