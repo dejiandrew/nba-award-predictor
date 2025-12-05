@@ -19,7 +19,7 @@ This project uses historical NBA performance data to predict Player of the Week 
 ## Data Pipeline
 
 ### Infrastructure
-The data pipeline runs automatically every morning via a **cron job on a DigitalOcean droplet**, ensuring we have up-to-date NBA data daily. This production infrastructure guarantees:
+The data pipeline runs automatically every morning via a **cron job on Google Cloud Run**, ensuring we have up-to-date NBA data daily. This production infrastructure guarantees:
 - Fresh data from Kaggle and NBA API sources
 - Automated processing and validation
 - Reliable uploads to Google Cloud Storage
