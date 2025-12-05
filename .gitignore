@@ -21,14 +21,6 @@ env/
 __pycache__/
 *.pyc
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-
-# Config secrets
-config/secrets.yml
-config/database.yml
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -38,3 +30,10 @@ Thumbs.db
 .idea/
 
 *.env
+
+player_of_the_week_script_old.py
+run_nba_pipeline.sh
+kaggle.json
+cis-5450-final-project-485661e2f371.json
+.dockerignore
+.DS_Store

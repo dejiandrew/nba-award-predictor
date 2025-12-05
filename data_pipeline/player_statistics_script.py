@@ -68,7 +68,7 @@ for chunk_num, chunk in enumerate(pd.read_csv('playerstatistics.csv', chunksize=
     ,full_name
     ,personId AS player_id
     ,gameId
-    ,gameDate
+    ,CAST(gameDateTimeEst AS DATE) AS gameDate
     ,playerteamCity
     ,playerteamName
     ,opponentteamCity

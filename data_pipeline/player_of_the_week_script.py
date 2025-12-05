@@ -127,7 +127,7 @@ player_of_the_week_df = duckdb.query(query).df()
 player_of_the_week_df.to_csv('player-of-the-week.csv',index=False)
 
 # Path to your credentials file
-credentials_path = 'cis-5450-final-project-485661e2f371.json'
+credentials_path = '/app/cis-5450-final-project-485661e2f371.json'
 
 # Set up the client with your credentials
 storage_client = storage.Client.from_service_account_json(credentials_path)

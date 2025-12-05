@@ -1,0 +1,9 @@
+nba_api
+pandas
+numpy
+google-cloud-storage
+duckdb
+requests
+kaggle
+wget
+psutil
