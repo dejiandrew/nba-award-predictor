@@ -2,8 +2,7 @@
 
 **CIS 5450: Big Data Analytics - Fall 2025**
 
-## Team Members
-**Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua**
+## Team Members: Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua
 ---
 
 ## Project Overview
