@@ -1,7 +1,6 @@
-# GCP Infrastructure Documentation
-
-*Project*: NBA Player of the Week Award Predictor  
-*Team*: Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua  
+# GCP Infrastructure
+NBA Player of the Week Award Predictor  
+Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua  
 ---
 
 ## Overview
