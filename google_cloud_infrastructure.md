@@ -1,7 +1,7 @@
 # GCP Infrastructure Documentation
 
-**Project**: NBA Player of the Week Award Predictor  
-**Team**: Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua  
+*Project*: NBA Player of the Week Award Predictor  
+*Team*: Deji Andrew, Abdullah Amer, Josh Lim, Hao Hua  
 ---
 
 ## Overview
@@ -32,19 +32,19 @@ This document provides evidence of our production infrastructure deployed on Goo
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     GCP Cloud Platform                   │
-│                                                          │
+│                     GCP Cloud Platform                  │
+│                                                         │
 │  ┌────────────────────────────────────────────┐         │
-│  │        Cloud Run (Scheduled Job)            │         │
+│  │        Cloud Run (Scheduled Job)           │         │
 │  │  ┌──────────────────────────────────────┐  │         │
 │  │  │   nba-pipeline                       │  │         │
 │  │  │   - Schedule: Daily 5:00 AM EST      │  │         │
 │  │  │   - Docker Container                 │  │         │
 │  │  │   - Runs: run_pipeline.py            │  │         │
 │  │  └──────────────────────────────────────┘  │         │
-│  │                    │                        │         │
-│  │                    │ Executes               │         │
-│  │                    ▼                        │         │
+│  │                    │                       │         │
+│  │                    │ Executes              │         │
+│  │                    ▼                       │         │
 │  │  ┌──────────────────────────────────────┐  │         │
 │  │  │  Pipeline Scripts (9 stages):        │  │         │
 │  │  │  1. Kaggle data ingestion            │  │         │
@@ -57,15 +57,15 @@ This document provides evidence of our production infrastructure deployed on Goo
 │  │  │  8. Feature engineering              │  │         │
 │  │  │  9. Inference data prep              │  │         │
 │  │  └──────────────────────────────────────┘  │         │
-│  │                    │                        │         │
-│  │                    │ Uploads                │         │
-│  │                    ▼                        │         │
+│  │                    │                       │         │
+│  │                    │ Uploads               │         │
+│  │                    ▼                       │         │
 │  └────────────────────────────────────────────┘         │
-│                      │                                   │
-│                      ▼                                   │
+│                      │                                  │
+│                      ▼                                  │
 │  ┌────────────────────────────────────────────┐         │
 │  │   Google Cloud Storage (GCS)               │         │
-│  │                                             │         │
+│  │                                            │         │
 │  │   Bucket: nba_award_predictor              │         │
 │  │   ├── nba_data/                            │         │
 │  │   │   ├── features-overall.csv             │         │
@@ -78,14 +78,13 @@ This document provides evidence of our production infrastructure deployed on Goo
 │  │   │   ├── nba-mvp.csv                      │         │
 │  │   │   └── all-nba-*.csv                    │         │
 │  └────────────────────────────────────────────┘         │
-│                                                          │
+│                                                         │
 └─────────────────────────────────────────────────────────┘
                            │
                            │ Accessed by
                            ▼
                   ┌─────────────────┐
-                  │  Final_Notebook  │
-                  │  (Model Training)│
+                  │  Final_Notebook │
                   └─────────────────┘
 ```
 
