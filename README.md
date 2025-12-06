@@ -108,7 +108,6 @@ This project applied concepts from **8 out of 13 course modules**:
 
 ### **Module 7: Human-Centered Data Science**
 - Data visualization for exploratory analysis (matplotlib, seaborn, plotly)
-- Ethical considerations in predictive modeling
 
 ### **Module 9: Supervised Machine Learning**
 - Binary classification with multiple algorithms:
