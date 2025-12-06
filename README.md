@@ -118,7 +118,7 @@ This project applied concepts from **8 out of 13 course modules**:
 - Model evaluation for imbalanced data (precision, recall, F1, PR-AUC)
 
 ### **Module 10: Advanced Machine Learning**
-- Handling class imbalance (SMOTE, class weighting, threshold tuning)
+- Handling class imbalance (class weighting)
 - Hyperparameter optimization
 - Feature engineering and selection
 - Model comparison and evaluation
