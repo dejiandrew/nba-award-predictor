@@ -60,8 +60,8 @@ This document provides evidence of our production infrastructure deployed on Goo
 │  │                    │ Uploads               │         │
 │  │                    ▼                       │         │
 │  └────────────────────────────────────────────┘         │
-│                       │                                  │
-│                       ▼                                  │
+│                       │                                 │
+│                       ▼                                 │
 │  ┌────────────────────────────────────────────┐         │
 │  │   Google Cloud Storage (GCS)               │         │
 │  │                                            │         │
