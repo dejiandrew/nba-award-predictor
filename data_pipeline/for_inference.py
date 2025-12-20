@@ -5,6 +5,7 @@ import wget
 import os
 from google.cloud import storage
 from datetime import datetime, timedelta
+import math
 import gc
 
 
@@ -110,9 +111,10 @@ def create_data_for_realtime_inference():
   if days_difference <= 7:      # If the current week isn't over yet
     weeks_to_fill = 1
   else:
-    weeks_to_fill = days_difference // 7
+    weeks_to_fill = math.ceil(days_difference / 7)
   # Fill in 2 rows per week because there are 2 POWs each week
   rows_to_fill = weeks_to_fill * 2
+  print("Weeks to fill: ", weeks_to_fill)
   print("Rows to fill: ", rows_to_fill)
 
   # Now loop through and create a new row for each week to fill
@@ -143,8 +145,8 @@ def create_data_for_realtime_inference():
       print("File saved locally but not uploaded to GCS (Hint: check for json credentials file)")
 
       # # Delete CSV files
-      os.remove('player-of-the-week.csv')
-      os.remove('player-of-the-week-for-inference.csv')
+      #os.remove('player-of-the-week.csv')
+      #os.remove('player-of-the-week-for-inference.csv')
 
   return pow_df_for_inference
 
@@ -157,7 +159,7 @@ wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/nba-m
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-first-team.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-second-team.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-third-team.csv')
-wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-of-the-week-for-inference.csv')
+#wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-of-the-week-for-inference.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-statistics.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/games.csv')
 
