@@ -1178,6 +1178,109 @@ overall_weekly_agg_df = df
 
 ###################################################################################################
 
+## 12/22/2025:  Add intra-week win pct features
+query = """
+WITH CTE AS (
+SELECT DISTINCT
+gameId
+,gameDate
+,playerteamName AS team
+,season
+,win
+FROM player_statistics_test_df
+
+)
+, CTE2 AS (
+SELECT CTE.*
+,team_conference_df.conference
+FROM CTE
+JOIN team_conference_df
+ON CTE.team = team_conference_df.team_nickname
+WHERE 1=1
+AND (conference LIKE '%East%' OR conference LIKE '%West%')
+)
+
+,Game_Type_Lookup AS (
+
+  SELECT gameId, gameDate, gameType FROM games.csv
+)
+
+,CTE3 AS(
+SELECT CTE2.*
+,CASE
+      WHEN season < 2025 THEN Game_Type_Lookup.gameType
+      WHEN CTE2.gameDate < '2025-10-21' THEN 'Preseason'
+      ELSE 'Regular Season'
+END AS gameType
+FROM CTE2
+JOIN Game_Type_Lookup
+ON CTE2.gameId = Game_Type_Lookup.gameId
+)
+
+,team_win_percentages AS (
+SELECT *
+,AVG(win) OVER(PARTITION BY team, season ORDER BY gameDate ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as win_pct
+FROM CTE3
+WHERE gameType = 'Regular Season'
+)
+
+SELECT gameId
+,CAST(gameDate AS DATE) AS gameDate
+,team
+,season
+,win
+,conference
+,gameType
+,win_pct
+FROM team_win_percentages
+"""
+win_pct_df = duckdb.query(query).df()
+win_pct_df['week_start'] = win_pct_df['gameDate'] - win_pct_df['gameDate'].dt.weekday.astype('timedelta64[D]')
+
+query = """
+SELECT
+team
+,season
+,conference
+,week_start
+,AVG(win_pct) AS avg_full_season_win_pct_this_week
+,MAX(win_pct) - MIN(win_pct) AS full_season_win_pct_max_minus_min_this_week
+FROM win_pct_df
+GROUP BY team, season, week_start, conference
+ORDER BY team, season, week_start, conference
+"""
+win_pct_weekly_agg_df = duckdb.query(query).df()
+win_pct_weekly_agg_df
+
+add_win_pct_columns = pd.merge(overall_weekly_agg_df,win_pct_weekly_agg_df,how='left',on=['team','season','week_start','conference'])
+add_win_pct_columns = add_win_pct_columns.fillna({'avg_full_season_win_pct_this_week':add_win_pct_columns['avg_full_season_win_pct_this_week'].mean(), 'full_season_win_pct_max_minus_min_this_week':add_win_pct_columns['full_season_win_pct_max_minus_min_this_week'].mean()})
+overall_weekly_agg_df = add_win_pct_columns
+
+## 12/22/2025: Add prior-season awards
+past_player_awards_df = player_stats_with_allstar_mvp_allnba_df[['firstName', 'lastName', 'full_name', 'player_id',
+       'season', 'all_star_this_season', 'mvp_this_season',
+       'all_nba_first_team_this_season', 'all_nba_second_team_this_season',
+       'all_nba_third_team_this_season']].drop_duplicates()
+past_player_awards_df['season_before_current_season'] = past_player_awards_df['season'] - 1
+query = """
+SELECT 
+a.full_name,
+a.player_id,
+a.season + 1 AS season,
+a.all_star_this_season AS all_star_last_season,
+a.mvp_this_season AS mvp_last_season,
+a.all_nba_first_team_this_season AS all_nba_first_team_last_season,
+a.all_nba_second_team_this_season AS all_nba_second_team_last_season,
+a.all_nba_third_team_this_season AS all_nba_third_team_last_season
+FROM past_player_awards_df a
+JOIN past_player_awards_df b
+ON a.player_id = b.player_id AND a.season = b.season_before_current_season
+ORDER BY season desc
+"""
+past_player_awards_df = duckdb.query(query).df()
+overall_features_df = pd.merge(overall_features_df,past_player_awards_df,how='left',on=['player_id','season']).drop(columns=['full_name_y']).fillna({'all_star_last_season':0, 'mvp_last_season':0, 'all_nba_first_team_last_season':0, 'all_nba_second_team_last_season':0, 'all_nba_third_team_last_season':0}).rename(columns={'full_name_x':'full_name'})
+overall_weekly_agg_df = pd.merge(overall_weekly_agg_df,past_player_awards_df,how='left',on=['player_id','season']).drop(columns=['full_name_y']).fillna({'all_star_last_season':0, 'mvp_last_season':0, 'all_nba_first_team_last_season':0, 'all_nba_second_team_last_season':0, 'all_nba_third_team_last_season':0}).rename(columns={'full_name_x':'full_name'})
+
 # Save output to CSV
 overall_features_df.to_csv('features_overall_for_inference_deji.csv',index=False)
 overall_weekly_agg_df.to_csv('features_overall_weekly_for_inference_deji.csv',index=False)
