@@ -7,6 +7,8 @@ from google.cloud import storage
 from datetime import datetime, timedelta
 import math
 import gc
+from nba_api.stats.static import teams
+pd.set_option('display.max_columns', None)
 
 
 def create_data_for_realtime_inference():
@@ -15,50 +17,50 @@ def create_data_for_realtime_inference():
 
   team_info = {
       # Eastern Conference
-      'Boston Celtics': {'conference': 'East', 'team_nickname': 'Celtics'},
-      'Brooklyn Nets': {'conference': 'East', 'team_nickname': 'Nets'},
-      'New York Knicks': {'conference': 'East', 'team_nickname': 'Knicks'},
-      'Philadelphia 76ers': {'conference': 'East', 'team_nickname': '76ers'},
-      'Philadelphia Sixers': {'conference': 'East', 'team_nickname': 'Sixers'},
-      'Toronto Raptors': {'conference': 'East', 'team_nickname': 'Raptors'},
-      'Chicago Bulls': {'conference': 'East', 'team_nickname': 'Bulls'},
-      'Cleveland Cavaliers': {'conference': 'East', 'team_nickname': 'Cavaliers'},
-      'Detroit Pistons': {'conference': 'East', 'team_nickname': 'Pistons'},
-      'Indiana Pacers': {'conference': 'East', 'team_nickname': 'Pacers'},
-      'Milwaukee Bucks': {'conference': 'East', 'team_nickname': 'Bucks'},
-      'Atlanta Hawks': {'conference': 'East', 'team_nickname': 'Hawks'},
-      'Charlotte Hornets': {'conference': 'East', 'team_nickname': 'Hornets'},
-      'Miami Heat': {'conference': 'East', 'team_nickname': 'Heat'},
-      'Orlando Magic': {'conference': 'East', 'team_nickname': 'Magic'},
-      'Washington Wizards': {'conference': 'East', 'team_nickname': 'Wizards'},
-      'Washington Bullets': {'conference': 'East', 'team_nickname': 'Bullets'},
-      'New Jersey Nets': {'conference': 'East', 'team_nickname': 'Nets'},
-      'Charlotte Bobcats': {'conference': 'East', 'team_nickname': 'Bobcats'},
+      'Boston Celtics': {'conference': 'East', 'team_nickname': 'Celtics', 'team_id': '1610612738'},
+      'Brooklyn Nets': {'conference': 'East', 'team_nickname': 'Nets', 'team_id': '1610612751'},
+      'New York Knicks': {'conference': 'East', 'team_nickname': 'Knicks', 'team_id': '1610612752'},
+      'Philadelphia 76ers': {'conference': 'East', 'team_nickname': '76ers', 'team_id': '1610612755'},
+      'Philadelphia Sixers': {'conference': 'East', 'team_nickname': 'Sixers', 'team_id': '1610612755'},
+      'Toronto Raptors': {'conference': 'East', 'team_nickname': 'Raptors', 'team_id': '1610612761'},
+      'Chicago Bulls': {'conference': 'East', 'team_nickname': 'Bulls', 'team_id': '1610612741'},
+      'Cleveland Cavaliers': {'conference': 'East', 'team_nickname': 'Cavaliers', 'team_id': '1610612739'},
+      'Detroit Pistons': {'conference': 'East', 'team_nickname': 'Pistons', 'team_id': '1610612765'},
+      'Indiana Pacers': {'conference': 'East', 'team_nickname': 'Pacers', 'team_id': '1610612754'},
+      'Milwaukee Bucks': {'conference': 'East', 'team_nickname': 'Bucks', 'team_id': '1610612749'},
+      'Atlanta Hawks': {'conference': 'East', 'team_nickname': 'Hawks', 'team_id': '1610612737'},
+      'Charlotte Hornets': {'conference': 'East', 'team_nickname': 'Hornets', 'team_id': '1610612766'},
+      'Miami Heat': {'conference': 'East', 'team_nickname': 'Heat', 'team_id': '1610612748'},
+      'Orlando Magic': {'conference': 'East', 'team_nickname': 'Magic', 'team_id': '1610612753'},
+      'Washington Wizards': {'conference': 'East', 'team_nickname': 'Wizards', 'team_id': '1610612764'},
+      'Washington Bullets': {'conference': 'East', 'team_nickname': 'Bullets', 'team_id': '1610612764'},
+      'New Jersey Nets': {'conference': 'East', 'team_nickname': 'Nets', 'team_id': '1610612751'},
+      'Charlotte Bobcats': {'conference': 'East', 'team_nickname': 'Bobcats', 'team_id': '1610612766'},
 
       # Western Conference
-      'Denver Nuggets': {'conference': 'West', 'team_nickname': 'Nuggets'},
-      'Minnesota Timberwolves': {'conference': 'West', 'team_nickname': 'Timberwolves'},
-      'Oklahoma City Thunder': {'conference': 'West', 'team_nickname': 'Thunder'},
-      'Portland Trail Blazers': {'conference': 'West', 'team_nickname': 'Trail Blazers'},
-      'Utah Jazz': {'conference': 'West', 'team_nickname': 'Jazz'},
-      'Golden State Warriors': {'conference': 'West', 'team_nickname': 'Warriors'},
-      'Los Angeles Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-      'LA Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-      'Los Angeles Lakers': {'conference': 'West', 'team_nickname': 'Lakers'},
-      'Phoenix Suns': {'conference': 'West', 'team_nickname': 'Suns'},
-      'Sacramento Kings': {'conference': 'West', 'team_nickname': 'Kings'},
-      'Dallas Mavericks': {'conference': 'West', 'team_nickname': 'Mavericks'},
-      'Houston Rockets': {'conference': 'West', 'team_nickname': 'Rockets'},
-      'Memphis Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies'},
-      'New Orleans Pelicans': {'conference': 'West', 'team_nickname': 'Pelicans'},
-      'San Antonio Spurs': {'conference': 'West', 'team_nickname': 'Spurs'},
-      'Seattle SuperSonics': {'conference': 'West', 'team_nickname': 'SuperSonics'},
-      'San Diego Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-      'Kansas City Kings': {'conference': 'West', 'team_nickname': 'Kings'},
-      'New Orleans Hornets': {'conference': 'West', 'team_nickname': 'Hornets'},
-      'Vancouver Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies'},
-      'Oklahoma City Hornets': {'conference': 'West', 'team_nickname': 'Hornets'},
-      'New Orleans Jazz': {'conference': 'West', 'team_nickname': 'Jazz'}
+      'Denver Nuggets': {'conference': 'West', 'team_nickname': 'Nuggets', 'team_id': '1610612743'},
+      'Minnesota Timberwolves': {'conference': 'West', 'team_nickname': 'Timberwolves', 'team_id': '1610612750'},
+      'Oklahoma City Thunder': {'conference': 'West', 'team_nickname': 'Thunder', 'team_id': '1610612760'},
+      'Portland Trail Blazers': {'conference': 'West', 'team_nickname': 'Trail Blazers', 'team_id': '1610612757'},
+      'Utah Jazz': {'conference': 'West', 'team_nickname': 'Jazz', 'team_id': '1610612762'},
+      'Golden State Warriors': {'conference': 'West', 'team_nickname': 'Warriors', 'team_id': '1610612744'},
+      'Los Angeles Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+      'LA Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+      'Los Angeles Lakers': {'conference': 'West', 'team_nickname': 'Lakers', 'team_id': '1610612747'},
+      'Phoenix Suns': {'conference': 'West', 'team_nickname': 'Suns', 'team_id': '1610612756'},
+      'Sacramento Kings': {'conference': 'West', 'team_nickname': 'Kings', 'team_id': '1610612758'},
+      'Dallas Mavericks': {'conference': 'West', 'team_nickname': 'Mavericks', 'team_id': '1610612742'},
+      'Houston Rockets': {'conference': 'West', 'team_nickname': 'Rockets', 'team_id': '1610612745'},
+      'Memphis Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies', 'team_id': '1610612763'},
+      'New Orleans Pelicans': {'conference': 'West', 'team_nickname': 'Pelicans', 'team_id': '1610612740'},
+      'San Antonio Spurs': {'conference': 'West', 'team_nickname': 'Spurs', 'team_id': '1610612759'},
+      'Seattle SuperSonics': {'conference': 'West', 'team_nickname': 'SuperSonics', 'team_id': '1610612760'},
+      'San Diego Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+      'Kansas City Kings': {'conference': 'West', 'team_nickname': 'Kings', 'team_id': '1610612758'},
+      'New Orleans Hornets': {'conference': 'West', 'team_nickname': 'Hornets', 'team_id': '1610612740'},
+      'Vancouver Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies', 'team_id': '1610612763'},
+      'Oklahoma City Hornets': {'conference': 'West', 'team_nickname': 'Hornets', 'team_id': '1610612740'},
+      'New Orleans Jazz': {'conference': 'West', 'team_nickname': 'Jazz', 'team_id': '1610612762'}
   }
 
   team_conference_df = pd.DataFrame.from_dict(team_info, orient='index')
@@ -152,16 +154,20 @@ def create_data_for_realtime_inference():
 
 create_data_for_realtime_inference()
 
-
 # Download CSV files
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/nba-all-stars.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/nba-mvp.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-first-team.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-second-team.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/all-nba-third-team.csv')
-#wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-of-the-week-for-inference.csv')
+#wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-of-the-week.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/player-statistics.csv')
 wget.download('https://storage.googleapis.com/nba_award_predictor/nba_data/games.csv')
+
+# Get all teams from NBA API. 12/27/2025.
+teams_list = teams.get_teams()
+team_list_df = pd.DataFrame(teams_list)
+team_list_df['id'] = team_list_df['id'].astype(str)
 
 # Kaggle source data changed the gameDate column name to gameDateTimeEst on 11/24/25. This code reverts the column back to gameDate.
 games_df = pd.read_csv('games.csv')
@@ -351,64 +357,66 @@ def build_team_games(df, filter=None):
                 'is_win_vs_over_500','wins_vs_over_500_prior',
                 'week_games_prior','week_wins_prior','week_losses_prior','week_record_prior',
                 'season'
-            ]]
+               ]]
     out.loc[:, 'gameid'] = out['gameid'].astype(int)
     out = out.rename(columns={'gameid': 'gameId'})
 
     return out.sort_values(['gamedate','gameId','home']).reset_index(drop=True)
 
 def wins_vs_all_nba(first,second,third,stats):
-    stats.rename(columns={"gameId": "game_id"}, inplace=True)
-    all_nba = pd.concat([first, second, third], ignore_index=True)
-    all_nba_player_ids = set(all_nba["player_id"].unique())
+  stats.rename(columns={"gameId": "game_id"}, inplace=True)
+  all_nba = pd.concat([first, second, third], ignore_index=True)
+  all_nba_player_ids = set(all_nba["player_id"].unique())
 
-    rosters = (
-        stats
-        .groupby(["game_id", "playerteamName"])["player_id"]
-        .apply(set)
-        .reset_index()
-        .rename(columns={"playerteamName": "team_name", "player_id": "roster"})
-    )
+  rosters = (
+      stats
+      .groupby(["game_id", "playerteamName"])["player_id"]
+      .apply(set)
+      .reset_index()
+      .rename(columns={"playerteamName": "team_name", "player_id": "roster"})
+  )
 
-    df = stats.merge(
-        rosters.rename(columns={"team_name": "playerteamName",
-                                "roster": "player_roster"}),
-        on=["game_id", "playerteamName"],
-        how="left"
-    )
+  df = stats.merge(
+      rosters.rename(columns={"team_name": "playerteamName",
+                              "roster": "player_roster"}),
+      on=["game_id", "playerteamName"],
+      how="left"
+  )
 
-    df = df.merge(
-        rosters.rename(columns={"team_name": "opponentteamName",
-                                "roster": "opponent_roster"}),
-        on=["game_id", "opponentteamName"],
-        how="left"
-    )
+  df = df.merge(
+      rosters.rename(columns={"team_name": "opponentteamName",
+                              "roster": "opponent_roster"}),
+      on=["game_id", "opponentteamName"],
+      how="left"
+  )
 
-    def opponent_has_all_nba(roster):
-        if isinstance(roster, set):
-            return int(len(roster.intersection(all_nba_player_ids)) > 0)
-        return 0
+  def opponent_has_all_nba(roster):
+      if isinstance(roster, set):
+          return int(len(roster.intersection(all_nba_player_ids)) > 0)
+      return 0
 
-    df["opponent_has_all_nba"] = df["opponent_roster"].apply(opponent_has_all_nba)
+  df["opponent_has_all_nba"] = df["opponent_roster"].apply(opponent_has_all_nba)
 
-    df["wins_vs_team_with_all_nba_player"] = (
-        (df["win"] == 1) & (df["opponent_has_all_nba"] == 1)
-    ).astype(int)
+  df["wins_vs_team_with_all_nba_player"] = (
+      (df["win"] == 1) & (df["opponent_has_all_nba"] == 1)
+  ).astype(int)
 
-    df["player_name"] = df["full_name"]
+  df["player_name"] = df["full_name"]
 
-    output = df[[
-        "player_id",
-        "player_name",
-        "game_id",
-        "playerteamName",
-        "opponentteamName",
-        "win",
-        "opponent_has_all_nba",
-        "wins_vs_team_with_all_nba_player"
-    ]].sort_values("game_id").reset_index(drop=True)
+  output = df[[
+      "player_id",
+      "player_name",
+      "game_id",
+      "gameDate",
+      "playerteamCity",
+      "playerteamName",
+      "opponentteamName",
+      "win",
+      "opponent_has_all_nba",
+      "wins_vs_team_with_all_nba_player"
+  ]].sort_values("game_id").reset_index(drop=True)
 
-    return output
+  return output
 
 games_df = pd.read_csv('games.csv')
 games_df.columns = games_df.columns.str.lower()
@@ -418,53 +426,52 @@ game = build_team_games(games_df, "gamedate.dt.year >= 1979")
 # games at that point (e.g. first game of the season). Set game["opp_winrate_prior"] to 0.500 for these rows.
 game["opp_winrate_prior"] = game["opp_winrate_prior"].fillna(0.500)
 
-
 team_info = {
     # Eastern Conference
-    'Boston Celtics': {'conference': 'East', 'team_nickname': 'Celtics'},
-    'Brooklyn Nets': {'conference': 'East', 'team_nickname': 'Nets'},
-    'New York Knicks': {'conference': 'East', 'team_nickname': 'Knicks'},
-    'Philadelphia 76ers': {'conference': 'East', 'team_nickname': '76ers'},
-    'Philadelphia Sixers': {'conference': 'East', 'team_nickname': 'Sixers'},
-    'Toronto Raptors': {'conference': 'East', 'team_nickname': 'Raptors'},
-    'Chicago Bulls': {'conference': 'East', 'team_nickname': 'Bulls'},
-    'Cleveland Cavaliers': {'conference': 'East', 'team_nickname': 'Cavaliers'},
-    'Detroit Pistons': {'conference': 'East', 'team_nickname': 'Pistons'},
-    'Indiana Pacers': {'conference': 'East', 'team_nickname': 'Pacers'},
-    'Milwaukee Bucks': {'conference': 'East', 'team_nickname': 'Bucks'},
-    'Atlanta Hawks': {'conference': 'East', 'team_nickname': 'Hawks'},
-    'Charlotte Hornets': {'conference': 'East', 'team_nickname': 'Hornets'},
-    'Miami Heat': {'conference': 'East', 'team_nickname': 'Heat'},
-    'Orlando Magic': {'conference': 'East', 'team_nickname': 'Magic'},
-    'Washington Wizards': {'conference': 'East', 'team_nickname': 'Wizards'},
-    'Washington Bullets': {'conference': 'East', 'team_nickname': 'Bullets'},
-    'New Jersey Nets': {'conference': 'East', 'team_nickname': 'Nets'},
-    'Charlotte Bobcats': {'conference': 'East', 'team_nickname': 'Bobcats'},
+    'Boston Celtics': {'conference': 'East', 'team_nickname': 'Celtics', 'team_id': '1610612738'},
+    'Brooklyn Nets': {'conference': 'East', 'team_nickname': 'Nets', 'team_id': '1610612751'},
+    'New York Knicks': {'conference': 'East', 'team_nickname': 'Knicks', 'team_id': '1610612752'},
+    'Philadelphia 76ers': {'conference': 'East', 'team_nickname': '76ers', 'team_id': '1610612755'},
+    'Philadelphia Sixers': {'conference': 'East', 'team_nickname': 'Sixers', 'team_id': '1610612755'},
+    'Toronto Raptors': {'conference': 'East', 'team_nickname': 'Raptors', 'team_id': '1610612761'},
+    'Chicago Bulls': {'conference': 'East', 'team_nickname': 'Bulls', 'team_id': '1610612741'},
+    'Cleveland Cavaliers': {'conference': 'East', 'team_nickname': 'Cavaliers', 'team_id': '1610612739'},
+    'Detroit Pistons': {'conference': 'East', 'team_nickname': 'Pistons', 'team_id': '1610612765'},
+    'Indiana Pacers': {'conference': 'East', 'team_nickname': 'Pacers', 'team_id': '1610612754'},
+    'Milwaukee Bucks': {'conference': 'East', 'team_nickname': 'Bucks', 'team_id': '1610612749'},
+    'Atlanta Hawks': {'conference': 'East', 'team_nickname': 'Hawks', 'team_id': '1610612737'},
+    'Charlotte Hornets': {'conference': 'East', 'team_nickname': 'Hornets', 'team_id': '1610612766'},
+    'Miami Heat': {'conference': 'East', 'team_nickname': 'Heat', 'team_id': '1610612748'},
+    'Orlando Magic': {'conference': 'East', 'team_nickname': 'Magic', 'team_id': '1610612753'},
+    'Washington Wizards': {'conference': 'East', 'team_nickname': 'Wizards', 'team_id': '1610612764'},
+    'Washington Bullets': {'conference': 'East', 'team_nickname': 'Bullets', 'team_id': '1610612764'},
+    'New Jersey Nets': {'conference': 'East', 'team_nickname': 'Nets', 'team_id': '1610612751'},
+    'Charlotte Bobcats': {'conference': 'East', 'team_nickname': 'Bobcats', 'team_id': '1610612766'},
 
     # Western Conference
-    'Denver Nuggets': {'conference': 'West', 'team_nickname': 'Nuggets'},
-    'Minnesota Timberwolves': {'conference': 'West', 'team_nickname': 'Timberwolves'},
-    'Oklahoma City Thunder': {'conference': 'West', 'team_nickname': 'Thunder'},
-    'Portland Trail Blazers': {'conference': 'West', 'team_nickname': 'Trail Blazers'},
-    'Utah Jazz': {'conference': 'West', 'team_nickname': 'Jazz'},
-    'Golden State Warriors': {'conference': 'West', 'team_nickname': 'Warriors'},
-    'Los Angeles Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-    'LA Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-    'Los Angeles Lakers': {'conference': 'West', 'team_nickname': 'Lakers'},
-    'Phoenix Suns': {'conference': 'West', 'team_nickname': 'Suns'},
-    'Sacramento Kings': {'conference': 'West', 'team_nickname': 'Kings'},
-    'Dallas Mavericks': {'conference': 'West', 'team_nickname': 'Mavericks'},
-    'Houston Rockets': {'conference': 'West', 'team_nickname': 'Rockets'},
-    'Memphis Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies'},
-    'New Orleans Pelicans': {'conference': 'West', 'team_nickname': 'Pelicans'},
-    'San Antonio Spurs': {'conference': 'West', 'team_nickname': 'Spurs'},
-    'Seattle SuperSonics': {'conference': 'West', 'team_nickname': 'SuperSonics'},
-    'San Diego Clippers': {'conference': 'West', 'team_nickname': 'Clippers'},
-    'Kansas City Kings': {'conference': 'West', 'team_nickname': 'Kings'},
-    'New Orleans Hornets': {'conference': 'West', 'team_nickname': 'Hornets'},
-    'Vancouver Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies'},
-    'Oklahoma City Hornets': {'conference': 'West', 'team_nickname': 'Hornets'},
-    'New Orleans Jazz': {'conference': 'West', 'team_nickname': 'Jazz'}
+    'Denver Nuggets': {'conference': 'West', 'team_nickname': 'Nuggets', 'team_id': '1610612743'},
+    'Minnesota Timberwolves': {'conference': 'West', 'team_nickname': 'Timberwolves', 'team_id': '1610612750'},
+    'Oklahoma City Thunder': {'conference': 'West', 'team_nickname': 'Thunder', 'team_id': '1610612760'},
+    'Portland Trail Blazers': {'conference': 'West', 'team_nickname': 'Trail Blazers', 'team_id': '1610612757'},
+    'Utah Jazz': {'conference': 'West', 'team_nickname': 'Jazz', 'team_id': '1610612762'},
+    'Golden State Warriors': {'conference': 'West', 'team_nickname': 'Warriors', 'team_id': '1610612744'},
+    'Los Angeles Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+    'LA Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+    'Los Angeles Lakers': {'conference': 'West', 'team_nickname': 'Lakers', 'team_id': '1610612747'},
+    'Phoenix Suns': {'conference': 'West', 'team_nickname': 'Suns', 'team_id': '1610612756'},
+    'Sacramento Kings': {'conference': 'West', 'team_nickname': 'Kings', 'team_id': '1610612758'},
+    'Dallas Mavericks': {'conference': 'West', 'team_nickname': 'Mavericks', 'team_id': '1610612742'},
+    'Houston Rockets': {'conference': 'West', 'team_nickname': 'Rockets', 'team_id': '1610612745'},
+    'Memphis Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies', 'team_id': '1610612763'},
+    'New Orleans Pelicans': {'conference': 'West', 'team_nickname': 'Pelicans', 'team_id': '1610612740'},
+    'San Antonio Spurs': {'conference': 'West', 'team_nickname': 'Spurs', 'team_id': '1610612759'},
+    'Seattle SuperSonics': {'conference': 'West', 'team_nickname': 'SuperSonics', 'team_id': '1610612760'},
+    'San Diego Clippers': {'conference': 'West', 'team_nickname': 'Clippers', 'team_id': '1610612746'},
+    'Kansas City Kings': {'conference': 'West', 'team_nickname': 'Kings', 'team_id': '1610612758'},
+    'New Orleans Hornets': {'conference': 'West', 'team_nickname': 'Hornets', 'team_id': '1610612740'},
+    'Vancouver Grizzlies': {'conference': 'West', 'team_nickname': 'Grizzlies', 'team_id': '1610612763'},
+    'Oklahoma City Hornets': {'conference': 'West', 'team_nickname': 'Hornets', 'team_id': '1610612740'},
+    'New Orleans Jazz': {'conference': 'West', 'team_nickname': 'Jazz', 'team_id': '1610612762'}
 }
 
 team_conference_df = pd.DataFrame.from_dict(team_info, orient='index')
@@ -472,7 +479,6 @@ team_conference_df.index.name = 'team'
 team_conference_df = team_conference_df.reset_index()
 
 pow_df = pd.read_csv('player-of-the-week-for-inference.csv')
-#pow_df = pd.read_csv('player-of-the-week.csv')
 
 query = """
 WITH CTE AS (
@@ -569,12 +575,12 @@ player_statistics_df = pd.read_csv('player-statistics.csv')
 stats = player_statistics_df = pd.read_csv('player-statistics.csv')
 
 player_statistics_df = player_statistics_df[['firstName', 'lastName', 'full_name', 'player_id', 'gameId', 'gameDate', 'playerteamName',
-'numMinutes', 'points', 'assists',
-    'blocks', 'steals', 'fieldGoalsAttempted', 'fieldGoalsMade',
-    'fieldGoalsPercentage', 'threePointersAttempted', 'threePointersMade',
-    'threePointersPercentage', 'freeThrowsAttempted', 'freeThrowsMade',
-    'freeThrowsPercentage', 'reboundsDefensive', 'reboundsOffensive',
-    'reboundsTotal', 'foulsPersonal', 'turnovers', 'plusMinusPoints']]
+  'numMinutes', 'points', 'assists',
+       'blocks', 'steals', 'fieldGoalsAttempted', 'fieldGoalsMade',
+       'fieldGoalsPercentage', 'threePointersAttempted', 'threePointersMade',
+       'threePointersPercentage', 'freeThrowsAttempted', 'freeThrowsMade',
+       'freeThrowsPercentage', 'reboundsDefensive', 'reboundsOffensive',
+       'reboundsTotal', 'foulsPersonal', 'turnovers', 'plusMinusPoints']]
 
 query = """
 
@@ -807,6 +813,55 @@ result_df["all_nba_third_team_this_season"] = np.where(result_df["all_nba_third_
 player_stats_with_allstar_mvp_allnba_df = result_df
 
 
+#### 12/27
+
+player_stats_with_allstar_mvp_allnba_df['player_team_full_name'] = player_stats_with_allstar_mvp_allnba_df['playerteamCity'] + ' ' + player_stats_with_allstar_mvp_allnba_df['playerteamName']
+player_stats_with_allstar_mvp_allnba_df = player_stats_with_allstar_mvp_allnba_df.merge(team_conference_df,left_on='playerteamName',right_on='team_nickname',how='inner')
+
+query = """
+WITH CTE AS (
+SELECT * FROM
+player_stats_with_allstar_mvp_allnba_df
+JOIN team_conference_df
+ON player_stats_with_allstar_mvp_allnba_df.playerteamName = team_conference_df.team_nickname
+)
+,
+CTE2 AS (
+SELECT *,
+CASE
+/*
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'Charlotte' AND conference = 'West' THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'West' AND season IN (2002,2003) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'East' AND season IN (2004) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'East' AND (season BETWEEN 2007 AND 2012) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'Oklahoma City' AND conference = 'East' THEN 0
+  WHEN playerteamName = 'Clippers' AND playerTeamCity = 'San Diego' AND season > 1983 THEN 0
+  WHEN playerteamName = 'Grizzlies' AND playerTeamCity = 'Vancouver' AND season > 2000 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City-Omaha' AND season > 1974 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City' AND season < 1975 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City' AND season > 1984 THEN 0
+  WHEN playerteamName = 'Jazz' AND playerTeamCity = 'New Orleans' AND season > 1978 THEN 0
+  WHEN playerteamName = 'Nets' AND playerTeamCity = 'New Jersey' AND season > 2011 THEN 0
+*/
+
+  WHEN playerteamName = 'Grizzlies' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Hornets' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Kings' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Jazz' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Clippers' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Nets' AND (player_team_full_name != team) THEN 0
+  ELSE 1
+END AS keep_row
+FROM player_stats_with_allstar_mvp_allnba_df
+)
+SELECT * FROM CTE2
+WHERE keep_row = 1
+"""
+player_stats_with_allstar_mvp_allnba_df = duckdb.query(query).df().drop(columns='keep_row').rename(columns={'full_name_x':'full_name','full_name_y':'team_full_name'})
+
+###
+
+
 query = """
 SELECT
 player_stats_with_allstar_mvp_allnba_df.gameId
@@ -815,7 +870,7 @@ player_stats_with_allstar_mvp_allnba_df.gameId
 ,week
 ,month
 ,year
-,team
+,game_and_player_stats_df.team
 ,teamid
 ,player_stats_with_allstar_mvp_allnba_df.firstName
 ,player_stats_with_allstar_mvp_allnba_df.lastName
@@ -885,11 +940,12 @@ FROM game_and_player_stats_df
 JOIN player_stats_with_allstar_mvp_allnba_df
 ON
 (
-game_and_player_stats_df.player_id = player_stats_with_allstar_mvp_allnba_df.player_id
-AND
-game_and_player_stats_df.gameId = player_stats_with_allstar_mvp_allnba_df.gameId
-AND
-game_and_player_stats_df.team = player_stats_with_allstar_mvp_allnba_df.playerTeamName
+  game_and_player_stats_df.player_id = player_stats_with_allstar_mvp_allnba_df.player_id
+  AND
+  game_and_player_stats_df.gameId = player_stats_with_allstar_mvp_allnba_df.gameId
+  AND
+  --game_and_player_stats_df.team = player_stats_with_allstar_mvp_allnba_df.playerTeamName
+  game_and_player_stats_df.teamid = player_stats_with_allstar_mvp_allnba_df.team_id
 )
 
 """
@@ -899,15 +955,154 @@ overall_features_df = duckdb.query(query).df()
 overall_features_df["won_player_of_the_week"] = np.where(overall_features_df.pow_player_id == overall_features_df.player_id,1,0)
 
 # Consider each player with respect to their conference. An Eastern Conference player is not eligible for Western Conference POW, and vice versa
+team_conference_df = team_conference_df.merge(team_list_df,left_on='team_nickname',right_on='nickname',how='left').sort_values(by='team_nickname').reset_index(drop=True)
 query = """
 SELECT *,
 FROM overall_features_df
 JOIN team_conference_df
-ON overall_features_df.team = team_conference_df.team_nickname AND overall_features_df.pow_conference = team_conference_df.conference
+ON overall_features_df.teamid = team_conference_df.team_id AND overall_features_df.pow_conference = team_conference_df.conference
+WHERE team_nickname = nickname
+AND team_conference_df.team = team_conference_df.full_name
 """
 overall_features_df = duckdb.query(query).df()
 
 wins_vs_all_nba_df = wins_vs_all_nba(first,second,third,stats)
+
+### Add season and team_id to wins_vs_all_nba_df. 12/28/25 ####
+
+query = """
+SELECT*,
+CASE
+    WHEN gameDate BETWEEN '2025-10-02' AND '2026-08-01' THEN 2025
+    WHEN gameDate BETWEEN '2024-10-04' AND '2025-06-22' THEN 2024
+    WHEN gameDate BETWEEN '2023-10-05' AND '2024-06-17' THEN 2023
+    WHEN gameDate BETWEEN '2022-09-30' AND '2023-06-12' THEN 2022
+    WHEN gameDate BETWEEN '2021-10-03' AND '2022-06-16' THEN 2021
+    WHEN gameDate BETWEEN '2020-12-11' AND '2021-07-20' THEN 2020
+    WHEN gameDate BETWEEN '2019-10-22' AND '2020-10-11' THEN 2019
+    WHEN gameDate BETWEEN '2018-10-16' AND '2019-06-10' THEN 2018
+    WHEN gameDate BETWEEN '2017-09-30' AND '2018-06-08' THEN 2017
+    WHEN gameDate BETWEEN '2016-10-01' AND '2017-06-12' THEN 2016
+    WHEN gameDate BETWEEN '2015-10-02' AND '2016-06-19' THEN 2015
+    WHEN gameDate BETWEEN '2014-10-04' AND '2015-06-16' THEN 2014
+    WHEN gameDate BETWEEN '2013-10-05' AND '2014-06-15' THEN 2013
+    WHEN gameDate BETWEEN '2012-10-05' AND '2013-06-20' THEN 2012
+    WHEN gameDate BETWEEN '2011-12-16' AND '2012-06-21' THEN 2011
+    WHEN gameDate BETWEEN '2010-10-03' AND '2011-06-12' THEN 2010
+    WHEN gameDate BETWEEN '2009-10-01' AND '2010-06-17' THEN 2009
+    WHEN gameDate BETWEEN '2008-10-05' AND '2009-06-11' THEN 2008
+    WHEN gameDate BETWEEN '2007-10-06' AND '2008-06-17' THEN 2007
+    WHEN gameDate BETWEEN '2006-10-05' AND '2007-06-14' THEN 2006
+    WHEN gameDate BETWEEN '2005-10-10' AND '2006-04-19' THEN 2005
+    WHEN gameDate BETWEEN '2004-11-02' AND '2005-06-21' THEN 2004
+    WHEN gameDate BETWEEN '2003-10-28' AND '2004-06-15' THEN 2003
+    WHEN gameDate BETWEEN '2002-10-29' AND '2003-06-15' THEN 2002
+    WHEN gameDate BETWEEN '2001-10-30' AND '2002-04-17' THEN 2001
+    WHEN gameDate BETWEEN '2000-10-31' AND '2001-06-15' THEN 2000
+    WHEN gameDate BETWEEN '1999-11-02' AND '2000-04-19' THEN 1999
+    WHEN gameDate BETWEEN '1998-02-05' AND '1999-06-25' THEN 1998
+    WHEN gameDate BETWEEN '1997-10-31' AND '1998-06-14' THEN 1997
+    WHEN gameDate BETWEEN '1996-11-01' AND '1997-06-13' THEN 1996
+    WHEN gameDate BETWEEN '1995-11-03' AND '1996-04-21' THEN 1995
+    WHEN gameDate BETWEEN '1994-11-04' AND '1995-06-14' THEN 1994
+    WHEN gameDate BETWEEN '1993-11-05' AND '1994-04-24' THEN 1993
+    WHEN gameDate BETWEEN '1992-11-06' AND '1993-06-20' THEN 1992
+    WHEN gameDate BETWEEN '1991-11-01' AND '1992-06-12' THEN 1991
+    WHEN gameDate BETWEEN '1990-11-02' AND '1991-06-12' THEN 1990
+    WHEN gameDate BETWEEN '1989-11-03' AND '1990-06-14' THEN 1989
+    WHEN gameDate BETWEEN '1988-11-04' AND '1989-06-13' THEN 1988
+    WHEN gameDate BETWEEN '1987-11-06' AND '1988-06-19' THEN 1987
+    WHEN gameDate BETWEEN '1986-10-31' AND '1987-06-14' THEN 1986
+    WHEN gameDate BETWEEN '1985-10-25' AND '1986-06-05' THEN 1985
+    WHEN gameDate BETWEEN '1984-10-26' AND '1985-06-09' THEN 1984
+    WHEN gameDate BETWEEN '1983-10-28' AND '1984-06-12' THEN 1983
+    WHEN gameDate BETWEEN '1982-10-29' AND '1983-05-31' THEN 1982
+    WHEN gameDate BETWEEN '1981-10-30' AND '1982-06-06' THEN 1981
+    WHEN gameDate BETWEEN '1980-10-10' AND '1981-05-14' THEN 1980
+    WHEN gameDate BETWEEN '1979-10-12' AND '1980-05-16' THEN 1979
+    WHEN gameDate BETWEEN '1978-10-13' AND '1979-06-01' THEN 1978
+    WHEN gameDate BETWEEN '1977-10-18' AND '1978-06-07' THEN 1977
+    WHEN gameDate BETWEEN '1976-02-13' AND '1977-06-05' THEN 1976
+    WHEN gameDate BETWEEN '1976-02-03' AND '1976-06-06' THEN 1975
+    WHEN gameDate BETWEEN '1974-10-17' AND '1975-05-25' THEN 1974
+    WHEN gameDate BETWEEN '1973-10-09' AND '1974-05-12' THEN 1973
+    WHEN gameDate BETWEEN '1972-10-10' AND '1973-05-10' THEN 1972
+    WHEN gameDate BETWEEN '1971-10-12' AND '1972-05-07' THEN 1971
+    WHEN gameDate BETWEEN '1971-01-12' AND '1971-04-30' THEN 1970
+    WHEN gameDate BETWEEN '1969-10-14' AND '1970-05-08' THEN 1969
+    WHEN gameDate BETWEEN '1968-10-15' AND '1969-03-24' THEN 1968
+    WHEN gameDate BETWEEN '1967-10-13' AND '1968-05-02' THEN 1967
+    WHEN gameDate BETWEEN '1967-01-10' AND '1967-04-24' THEN 1966
+    WHEN gameDate BETWEEN '1965-10-15' AND '1966-04-28' THEN 1965
+    WHEN gameDate BETWEEN '1964-10-16' AND '1965-03-21' THEN 1964
+    WHEN gameDate BETWEEN '1963-10-16' AND '1964-04-26' THEN 1963
+    WHEN gameDate BETWEEN '1962-10-19' AND '1963-04-24' THEN 1962
+    WHEN gameDate BETWEEN '1961-02-16' AND '1962-04-18' THEN 1961
+    WHEN gameDate BETWEEN '1961-01-17' AND '1961-01-17' THEN 1960
+    WHEN gameDate BETWEEN '1959-10-18' AND '1960-04-09' THEN 1959
+    WHEN gameDate BETWEEN '1958-10-19' AND '1959-03-11' THEN 1958
+    WHEN gameDate BETWEEN '1957-10-22' AND '1958-03-12' THEN 1957
+    WHEN gameDate BETWEEN '1956-10-27' AND '1957-04-13' THEN 1956
+    WHEN gameDate BETWEEN '1955-11-05' AND '1956-04-05' THEN 1955
+    WHEN gameDate BETWEEN '1954-10-30' AND '1955-04-10' THEN 1954
+    WHEN gameDate BETWEEN '1953-10-30' AND '1954-04-11' THEN 1953
+    WHEN gameDate BETWEEN '1952-10-31' AND '1953-04-10' THEN 1952
+    WHEN gameDate BETWEEN '1951-11-01' AND '1952-04-23' THEN 1951
+    WHEN gameDate BETWEEN '1950-10-31' AND '1951-04-21' THEN 1950
+    WHEN gameDate BETWEEN '1949-10-29' AND '1950-04-23' THEN 1949
+    WHEN gameDate BETWEEN '1948-11-01' AND '1949-04-13' THEN 1948
+    WHEN gameDate BETWEEN '1947-11-12' AND '1948-04-21' THEN 1947
+    WHEN gameDate BETWEEN '1946-11-01' AND '1947-04-22' THEN 1946
+END AS season
+FROM wins_vs_all_nba_df
+"""
+wins_vs_all_nba_df = duckdb.query(query).df()
+wins_vs_all_nba_df['player_team_full_name'] = wins_vs_all_nba_df['playerteamCity'] + ' ' + wins_vs_all_nba_df['playerteamName']
+wins_vs_all_nba_df = wins_vs_all_nba_df.merge(team_conference_df,left_on='playerteamName',right_on='team_nickname',how='inner')
+
+query = """
+WITH CTE AS (
+SELECT * FROM
+wins_vs_all_nba_df
+JOIN team_conference_df
+ON wins_vs_all_nba_df.playerteamName = team_conference_df.team_nickname
+)
+,
+CTE2 AS (
+SELECT *,
+CASE
+/*
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'Charlotte' AND conference = 'West' THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'West' AND season IN (2002,2003) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'East' AND season IN (2004) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'New Orleans' AND conference = 'East' AND (season BETWEEN 2007 AND 2012) THEN 0
+  WHEN playerteamName = 'Hornets' AND playerTeamCity = 'Oklahoma City' AND conference = 'East' THEN 0
+  WHEN playerteamName = 'Clippers' AND playerTeamCity = 'San Diego' AND season > 1983 THEN 0
+  WHEN playerteamName = 'Grizzlies' AND playerTeamCity = 'Vancouver' AND season > 2000 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City-Omaha' AND season > 1974 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City' AND season < 1975 THEN 0
+  WHEN playerteamName = 'Kings' AND playerTeamCity = 'Kansas City' AND season > 1984 THEN 0
+  WHEN playerteamName = 'Jazz' AND playerTeamCity = 'New Orleans' AND season > 1978 THEN 0
+  WHEN playerteamName = 'Nets' AND playerTeamCity = 'New Jersey' AND season > 2011 THEN 0
+  */
+
+  WHEN playerteamName = 'Grizzlies' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Hornets' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Kings' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Jazz' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Clippers' AND (player_team_full_name != team) THEN 0
+  WHEN playerteamName = 'Nets' AND (player_team_full_name != team) THEN 0
+  ELSE 1
+END AS keep_row
+FROM wins_vs_all_nba_df
+)
+SELECT * FROM CTE2
+WHERE keep_row = 1
+"""
+
+wins_vs_all_nba_df = duckdb.query(query).df().drop(columns='keep_row')
+
+##################################################################
 
 query = """
 SELECT overall_features_df.*
@@ -920,11 +1115,12 @@ FROM
 overall_features_df
 JOIN wins_vs_all_nba_df
 ON (
-overall_features_df.gameId = wins_vs_all_nba_df.game_id
-AND
-overall_features_df.player_id = wins_vs_all_nba_df.player_id
-AND
-overall_features_df.team = wins_vs_all_nba_df.playerteamName
+  overall_features_df.gameId = wins_vs_all_nba_df.game_id
+  AND
+  overall_features_df.player_id = wins_vs_all_nba_df.player_id
+  AND
+  --overall_features_df.team = wins_vs_all_nba_df.playerteamName
+  overall_features_df.teamid = wins_vs_all_nba_df.team_id
 )
 
 """
@@ -933,31 +1129,31 @@ overall_features_df['week_start'] = overall_features_df['gameDate'] - overall_fe
 
 # weekly team aggregates
 team_week = (
-    overall_features_df.groupby(["team","season","week_start"], as_index=False)
-    .agg(team_pts=("points","sum"),
-        team_ast=("assists","sum"),
-        team_blk=("blocks","sum"),
-        team_stl=("steals","sum"),
-        team_gms=("gameId","nunique"))
+    overall_features_df.groupby(["teamid","season","week_start"], as_index=False)
+      .agg(team_pts=("points","sum"),
+           team_ast=("assists","sum"),
+           team_blk=("blocks","sum"),
+           team_stl=("steals","sum"),
+           team_gms=("gameId","nunique"))
 )
 
 # weekly playeraggregates
 player_week = (
-    overall_features_df.groupby(["player_id","team","season","week_start","week"], as_index=False)
-    .agg(gms=("gameId","nunique"),
-        min_sum=("numMinutes","sum"),
-        pts_sum=("points","sum"),
-        ast_sum=("assists","sum"),
-        blk_sum=("blocks","sum"),
-        stl_sum=("steals","sum"),
-        pm_sum =("plusMinusPoints","sum"),
-        pm_mean=("plusMinusPoints","mean"),
-        wins=("win","sum"))
+    overall_features_df.groupby(["player_id","teamid","season","week_start","week"], as_index=False)
+      .agg(gms=("gameId","nunique"),
+           min_sum=("numMinutes","sum"),
+           pts_sum=("points","sum"),
+           ast_sum=("assists","sum"),
+           blk_sum=("blocks","sum"),
+           stl_sum=("steals","sum"),
+           pm_sum =("plusMinusPoints","sum"),
+           pm_mean=("plusMinusPoints","mean"),
+           wins=("win","sum"))
 )
 
 feat = player_week.merge(
     team_week,
-    on=["team","season","week_start"],
+    on=["teamid","season","week_start"],
     how="inner"
 )
 
@@ -981,12 +1177,13 @@ SELECT * FROM
 overall_features_df
 JOIN feat
 ON (
-overall_features_df.player_id = feat.player_id
-AND
-overall_features_df.week_start = feat.week_start
-AND
-overall_features_df.team_nickname = feat.team
-)
+  overall_features_df.player_id = feat.player_id
+  AND
+  overall_features_df.week_start = feat.week_start
+  AND
+  --overall_features_df.team_nickname = feat.team
+  overall_features_df.teamid = feat.teamid
+  )
 """
 
 overall_features_df = duckdb.query(query).df()
@@ -1104,6 +1301,7 @@ overall_weekly_agg_df["z_ast"] = zscore(overall_weekly_agg_df["assists"], overal
 overall_weekly_agg_df["z_pm"] = zscore(overall_weekly_agg_df["plusMinusPoints"], overall_weekly_agg_df["plusMinusPoints_mean_season"], overall_weekly_agg_df["plusMinusPoints_std_season"])
 overall_weekly_agg_df["breakout_score"] = (0.5 * overall_weekly_agg_df["z_pts"] + 0.3 * overall_weekly_agg_df["z_ast"] + 0.2 * overall_weekly_agg_df["z_pm"])
 
+
 ##############################################################################################################
 # Adding new features on 12/3/25 #
 df = overall_weekly_agg_df.sort_values(["season", "week"]).copy()
@@ -1153,6 +1351,7 @@ os.remove('games.csv')
 
 # Upload to GCS
 credentials_path = 'cis-5450-final-project-485661e2f371.json'
+
 try:
     storage_client = storage.Client.from_service_account_json(credentials_path)
     bucket_name = 'nba_award_predictor'
